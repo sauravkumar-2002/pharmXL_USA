@@ -65,6 +65,8 @@ class _OtpScreenState extends State<OtpScreen> {
                 PinInputField(
                   pinLength: 6,
                   onChanged: (value) {
+
+
                     setState(() {
                       _pin = value;
                     });
