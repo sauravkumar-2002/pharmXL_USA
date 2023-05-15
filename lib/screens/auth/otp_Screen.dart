@@ -70,6 +70,7 @@ class _OtpScreenState extends State<OtpScreen> {
                     });
                   },
                 ),
+
                 SizedBox(height: 20),
                 Container(
 
