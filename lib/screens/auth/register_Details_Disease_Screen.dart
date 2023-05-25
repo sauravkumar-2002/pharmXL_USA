@@ -2,10 +2,15 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:chips_choice_null_safety/chips_choice_null_safety.dart';
+
 import 'package:pharm_xl/screens/Dashboard_Screen.dart';
+
+import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:pharm_xl/screens/auth/register_Details_Weight_Screen.dart';
 
+List<String> selected_disease = [];
+List<String> total_disease = ['a','b','c','d'];
+bool toggleValue_tratment=false;
 
 
 
@@ -32,9 +37,8 @@ class _registerDetailsDiseaseState extends State<registerDetailsDisease> {
 //orange-- DE6739
 
   var myopacity=0.0;
-  var tag=1;
-  List<String> tags=[];
-  List<String> options=['D1','D2','D3','D4','D5','D6','D7','D8','D9','D1','D2','D3'];
+
+  List<Item>_data=generateItems(selected_disease.length, selected_disease);
 
 
 
@@ -49,7 +53,7 @@ class _registerDetailsDiseaseState extends State<registerDetailsDisease> {
   void initState() {
     Timer(Duration(milliseconds: 450),(){
       setState(() {
-        print(tags.toString());
+
         myopacity=1.0;
       });
     });
@@ -90,41 +94,83 @@ class _registerDetailsDiseaseState extends State<registerDetailsDisease> {
                     ),
                   ),
 
+
+
+
                   Divider(color: Colors.grey, height: 32),
                   SizedBox(height: 16),
-                   ChipsChoice<String>.multiple(
-                      value: tags,
-                      onChanged: (val)  {
-                        setState(() {
-                          tags = val;
-                          print(tags);
-                        });
+
+
+
+/*
+                  MultiSelectDialogField(
+                    title: Text("Select Disease"),
+                      items: total_disease.map((e) => MultiSelectItem(e, e)).toList(),
+                      initialValue: selected_disease,
+                    searchable: true,
+                    searchHint: "Search Here",
+                    buttonText: Text("Select Your Related Disease"),
+                    buttonIcon:Icon(Icons.arrow_drop_down),
+                    onConfirm: (x ) {
+                      setState(() {
+                        selected_disease =x.cast();
+                        _data=generateItems(selected_disease.length, selected_disease);
+                        print(_data);
+                        print(selected_disease);
+                      });
+                  },
+
+
+                      ),
+*/
+                  InkWell(
+                        onTap: () async {
+                      final selectedValues = await showDialog(
+                      context: context,
+                         builder: (BuildContext context) {
+                           return MultiSelectDialog(
+                             searchable: true,
+                             searchHint: "Search Here",
+                             items: total_disease.map((e) => MultiSelectItem(e, e)).toList(),
+                             initialValue: selected_disease,
+                             onConfirm: (x ) {
+                               setState(() {
+                                 selected_disease =x.cast();
+                                 _data=generateItems(selected_disease.length, selected_disease);
+                                 print(_data);
+                                 print(selected_disease);
+                               });
+                             },
+                                  );
+                               },
+                        );
+
                         },
-                      choiceItems: C2Choice.listFrom<String, String>(
-                        source: options,
-                        value: (i, v) => v,
-                        label: (i, v) => v,
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
                       ),
-                      choiceStyle: C2ChoiceStyle(
-                        color: Color(0xFF313586),
-                        borderColor: Colors.orange,
-                        borderRadius: BorderRadius.all(Radius.circular(0))
+                      child: Row(
+                        children: const [
+                          Expanded(
+                              child: Align(
+                                alignment:Alignment.centerLeft,
+                                  child: Text("Select Your Related Disease"))),
+                          Align(
+                              alignment:Alignment.centerRight,
+                              child: Icon(Icons.arrow_drop_down))
+                        ],
                       ),
-                     choiceActiveStyle: C2ChoiceStyle(
-                         color: Colors.green,
-                         borderColor: Colors.green,
-                         borderRadius: BorderRadius.all(Radius.circular(0))
-                     ),
-                      wrapped: true,
-                      textDirection: TextDirection.rtl,
                     ),
-
-
-
-
-                  Divider(color: Colors.grey, height: 32),
-
+                   
+                  ),
                   SizedBox(height: 16),
+                  _buildList(),
+                  Divider(color: Colors.grey, height: 32),
+                  SizedBox(height: 16),
+
+
+
 
 
                   Row(
@@ -202,9 +248,109 @@ class _registerDetailsDiseaseState extends State<registerDetailsDisease> {
 
 
 
+  Widget _buildList() {
+   return ExpansionPanelList(
+     expansionCallback: (int index,bool isExpanded){
+       setState(() {
+         _data[index].isExpanded=!isExpanded;
+       });
+     },
+     children:_data.map<ExpansionPanel>((Item item){
+       return ExpansionPanel(
+           headerBuilder:(BuildContext context,bool isExpanded){
+             return ListTile(
+               title: Text(item.headerValue),
+             );
+           },
+       body: _body_for_expanded_list_view(item),
+         isExpanded: item.isExpanded
+       );
+     }).toList(),
+   );
+  }
+
+
+
+  Widget _body_for_expanded_list_view(Item item){
+    return Container(
+     padding: EdgeInsets.all(12.0),
+      child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                       Text('On Going Treatment : '),
+
+                     Switch(
+                      value: toggleValue_tratment,
+                      onChanged: (value) {
+                        setState(() {
+                          toggleValue_tratment = value;
+                        });
+                      },
+
+                  ),
+
+
+              ],
+            ),
+
+            TextField(
+              //controller: textFieldController,
+              decoration: InputDecoration(
+                hintText: 'Enter Drugs Name ',
+              ),
+            ),
+            SizedBox(height: 16.0),
+            Align(
+              alignment: Alignment.center,
+              child: InkWell(
+                  onTap: (){
+                    setState(() {
+                      _data.removeWhere((currentItem) => item==currentItem);
+                      selected_disease.removeAt(item.index);
+                      print(selected_disease);
+                    });
+                  },
+                  child: Icon(Icons.delete_forever)),
+
+            )
+
+          ]
+      ),
+    );
+  }
+
+
+
 
 
 }
+
+
+class Item{
+  String expandedValue;
+  String headerValue;
+  bool isExpanded;
+  int index;
+
+  Item({required this.expandedValue,required this.headerValue,this.isExpanded=false,required this.index});
+
+}
+
+List<Item> generateItems(int numberofItems,List<String>selected_disease){
+  return List.generate(numberofItems, (index) {
+    return Item(expandedValue: "Di desc", headerValue:selected_disease[index],index: index);
+  });
+}
+
+
+
+
+
+
+
+
 
 
 

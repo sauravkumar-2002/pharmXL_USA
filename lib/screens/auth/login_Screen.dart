@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:pharm_xl/screens/auth/register_Details_Disease_Screen.dart';
 import 'package:pharm_xl/screens/auth/signUp_Screen.dart';
+import 'package:pharm_xl/screens/nav_dashboard/graph_Screen.dart';
 
 class loginScreen extends StatefulWidget{
   @override
@@ -211,7 +213,7 @@ void initState() {
         context,
         PageRouteBuilder(
             transitionDuration: Duration(seconds: 2),
-            pageBuilder: (_, __, ___) => signUpScreen()));
+            pageBuilder: (_, __, ___) => registerDetailsDisease()));
   }
 
 

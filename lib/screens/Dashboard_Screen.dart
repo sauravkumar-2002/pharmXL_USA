@@ -5,6 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
 import 'package:pharm_xl/screens/auth/register_Details_Height_Screen.dart';
 import 'package:pharm_xl/screens/auth/register_Details_Country_Dob.dart';
+import 'package:pharm_xl/screens/nav_dashboard/graph_Screen.dart';
+import 'package:pharm_xl/screens/nav_dashboard/home_Screen.dart';
+import 'package:pharm_xl/screens/nav_dashboard/profile_Screen.dart';
+import 'package:pharm_xl/screens/nav_dashboard/settings_Screen.dart';
 
 
 
@@ -24,6 +28,16 @@ class _dashboardScreenState extends State<dashboardScreen> {
   var myopacity = 0.0;
 
 
+  int currentTab=3;
+  final List<Widget> screens=[
+    homeScreen(),
+    profileScreen(),
+    settingsScreen(),
+    graphsScreen()
+  ];
+
+  final PageStorageBucket bucket=PageStorageBucket();
+  Widget currentScreen=graphsScreen();
 
   @override
   void initState() {
@@ -38,40 +52,111 @@ class _dashboardScreenState extends State<dashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(10.0),
-        child: SingleChildScrollView(
-          child: AnimatedOpacity(
-            opacity: myopacity,
-            duration: Duration(seconds: 1),
-            child: Container(
+      body: PageStorage(
+        child: currentScreen,
+          bucket: bucket,
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Color(0xffDE6739),
+        child: Icon(Icons.bar_chart_outlined,size: 28,color: currentTab==3?Color(0xff313586):Colors.white,),
+        onPressed: (){
+          setState(() {
+            currentScreen =graphsScreen();
+            currentTab = 3;
+          });
+        },
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
-
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+      bottomNavigationBar: BottomAppBar(
+        shape: CircularNotchedRectangle(),
+        notchMargin: 2,
+        child: Container(
+          height: 60,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children:<Widget> [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Center(
-                    child: Hero(
-                        tag: "logo",
-                        child: Image.asset(
-                          'assets/images/logo.png', width: 150, height: 150,)),
+                  MaterialButton(
+                    minWidth: 40,
+                      onPressed: () {
+                        setState(() {
+                          currentScreen =homeScreen();
+                          currentTab = 0;
+                        });
+                      },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.home_outlined,color: currentTab==0?Color(0xff313586):Colors.grey,),
+                        Text("Home",style: TextStyle(color: currentTab==0?Color(0xff313586):Colors.grey,),)
+                      ],
+                    ),
+                  ),
+                  MaterialButton(
+                    minWidth: 40,
+                    onPressed: () {
+                      setState(() {
+                        currentScreen =homeScreen();
+                        currentTab = 0;
+                      });
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.next_plan_outlined,color: currentTab==0?Color(0xff313586):Colors.grey,),
+                        Text("Plans",style: TextStyle(color: currentTab==0?Color(0xff313586):Colors.grey,),)
+                      ],
+                    ),
                   ),
 
-                  Container(
-                    margin: EdgeInsets.only(top: 11, bottom: 12),
-                    child: Text(
-                      "How older are you?",
-                      style: TextStyle(fontSize: 22,
-                          color: Color(0Xff313586),
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'logofont'),),
-                  ),
-                  _IntegerExample()
 
 
                 ],
               ),
-            ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  MaterialButton(
+                    minWidth: 40,
+                    onPressed: () {
+                      setState(() {
+                        currentScreen =settingsScreen();
+                        currentTab = 2;
+                      });
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.settings_outlined,color: currentTab==2?Color(0xff313586):Colors.grey,),
+                        Text("Settings",style: TextStyle(color: currentTab==2?Color(0xff313586):Colors.grey,),)
+                      ],
+                    ),
+                  ),
+
+                  MaterialButton(
+                    minWidth: 40,
+                    onPressed: () {
+                      setState(() {
+                        currentScreen =profileScreen();
+                        currentTab = 1;
+                      });
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.person_2_outlined,color: currentTab==1?Color(0xff313586):Colors.grey,),
+                        Text("Profile",style: TextStyle(color: currentTab==1?Color(0xff313586):Colors.grey,),)
+                      ],
+                    ),
+                  ),
+
+
+                ],
+              )
+            ],
           ),
         ),
       ),
@@ -81,103 +166,6 @@ class _dashboardScreenState extends State<dashboardScreen> {
 
 }
 
-
-class _IntegerExample extends StatefulWidget {
-  @override
-  __IntegerExampleState createState() => __IntegerExampleState();
-}
-
-class __IntegerExampleState extends State<_IntegerExample> {
-
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        SizedBox(height: 16),
-        Divider(color: Colors.grey, height: 32),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            NumberPicker(
-              value: currentAgeValue,
-              minValue: 1,
-              itemWidth: 47,
-              selectedTextStyle:TextStyle(fontSize: 27,fontWeight:FontWeight.w600,color: Color(0xFFDE6739)),
-              textStyle: TextStyle(fontSize: 27),
-              maxValue: 120,
-              step: 1,
-              haptics: true,
-              onChanged: (value) => setState(() => currentAgeValue = value),
-            ),
-            SizedBox(width: 3,),
-            Text("Yrs",style: TextStyle(fontSize: 23,fontWeight:FontWeight.w600,color: Color(0xFFDE6739)),)
-          ],
-        ),
-        SizedBox(height: 16),
-        Divider(color: Colors.grey, height: 32),
-
-        SizedBox(height: 16),
-
-
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            InkWell(
-              onTap: (){
-                gotoRegisterDetailsHieghtScreen();
-              },
-              child:Text('Next',style: TextStyle(fontSize: 24,color: Color(0xff313586),fontWeight: FontWeight.w700),),
-            ),
-            Icon(Icons.navigate_next,color: Color(0xff313586),size: 24),
-
-
-          ],
-        ),
-
-        SizedBox(height: 16),
-
-        InkWell(
-            onTap: (){
-              gotoRegisterDetailsHieghtScreen();
-            },
-            child: Text('Skip For Now',style: TextStyle(fontSize: 20,color: Colors.grey,),)
-        ),
-        SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            //Icon(Icons.navigate_before,color: Colors.grey,size: 24),
-            InkWell(
-              onTap: (){
-                gotoRegisterDetailsCountryScreen();
-              },
-              child:Text('Back',style: TextStyle(fontSize: 20,color: Colors.grey),),
-            ),
-
-
-
-          ],
-        ),
-      ],
-    );
-  }
-
-  void gotoRegisterDetailsCountryScreen() {
-    Navigator.push(
-        context,
-        PageRouteBuilder(
-            transitionDuration: Duration(seconds: 1),
-            pageBuilder: (_, __, ___) => registerDetailsCountryDob()));
-  }
-  void gotoRegisterDetailsHieghtScreen() {
-    Navigator.push(
-        context,
-        PageRouteBuilder(
-            transitionDuration: Duration(seconds: 1),
-            pageBuilder: (_, __, ___) => registerDetails()));
-  }
-}
 
 
 

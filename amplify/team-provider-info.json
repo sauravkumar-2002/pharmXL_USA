@@ -1,0 +1,20 @@
+{
+  "devpharmxl": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-pharmxl-devpharmxl-183139-authRole",
+      "UnauthRoleArn": "arn:aws:iam::117684060364:role/amplify-pharmxl-devpharmxl-183139-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::117684060364:role/amplify-pharmxl-devpharmxl-183139-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-pharmxl-devpharmxl-183139-deployment",
+      "UnauthRoleName": "amplify-pharmxl-devpharmxl-183139-unauthRole",
+      "StackName": "amplify-pharmxl-devpharmxl-183139",
+      "StackId": "arn:aws:cloudformation:us-east-1:117684060364:stack/amplify-pharmxl-devpharmxl-183139/23df5b70-fa33-11ed-874d-121f9d91bc6b",
+      "AmplifyAppId": "dvg2573f2667g"
+    },
+    "categories": {
+      "auth": {
+        "pharmxlab4d8cef": {}
+      }
+    }
+  }
+}

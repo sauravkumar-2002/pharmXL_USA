@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:pharm_xl/screens/auth/login_Screen.dart';
 import 'package:pharm_xl/screens/auth/otp_Screen.dart';
+//import 'package:amplify_flutter/amplify_flutter.dart';
 
 class signUpScreen extends StatefulWidget{
   @override
@@ -26,6 +27,9 @@ class _signUpScreenState extends State<signUpScreen>{
   var  confirmpasswordText=TextEditingController();
   var  usernameText=TextEditingController();
 
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool validate = false;
+  //AWSAuthRepo auth = AWSAuthRepo();
 
 
 
