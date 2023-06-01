@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:units_converter/units_converter.dart';
 import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:pharm_xl/screens/auth/login_Screen.dart';
@@ -10,7 +12,10 @@ import 'package:pharm_xl/screens/auth/register_Details_Age.dart';
 import 'package:pharm_xl/screens/auth/register_Details_Weight_Screen.dart';
 import 'package:pharm_xl/screens/auth/signUp_Screen.dart';
 import 'package:numberpicker/numberpicker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toggle_switch/toggle_switch.dart';
+
+import '../../models/register_Model.dart';
 
 
 
@@ -28,6 +33,7 @@ bool show_feet_container=true;
 bool show_height_container=true;
 bool show_weight_container=false;
 bool show_cm_container=false;
+register_Model register_model=register_Model();
 class registerDetails extends StatefulWidget{
 
 
@@ -65,6 +71,7 @@ class _registerDetailsState extends State<registerDetails> {
       });
     });
     super.initState();
+    getUserInfo();
 
 
   }
@@ -109,6 +116,20 @@ class _registerDetailsState extends State<registerDetails> {
     );
   }
 
+  Future<void> getUserInfo() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    Map<String, dynamic> register_model_map = {};
+    final String? register_model_json = prefs.getString('register_model_shared_pref');
+    print(register_model_json);
+    if (register_model_json != null) {
+      register_model_map = jsonDecode(register_model_json) as Map<String, dynamic>;
+    }
+
+    register_model = register_Model.fromMap(register_model_map);
+    print(register_model);
+
+  }
 
 
 
@@ -175,7 +196,12 @@ class __IntegerExampleState extends State<_IntegerExample> {
                           maxValue: 11,
                           step: 1,
                           haptics: true,
-                          onChanged: (value) => setState(() => currentInchValue = value),
+                          onChanged: (value) => setState(()
+                          {
+                            currentInchValue = value;
+                            register_model.height=value.convertFromTo(LENGTH.inches, LENGTH.centimeters) as int;
+                            currentCMValue=register_model.height;
+                          }),
                         ),
                         Text('"', style: Theme.of(context).textTheme.headline6),
                       ],
@@ -197,7 +223,11 @@ class __IntegerExampleState extends State<_IntegerExample> {
                           step: 5,
                           haptics: true,
 
-                          onChanged: (value) => setState(() => currentCMValue = value),
+                          onChanged: (value) => setState(()
+                          {
+                            currentCMValue = value;
+                            register_model.height=value;
+                          }),
                         ),
                         SizedBox(width: 3),
                         Text("cm", style: Theme.of(context).textTheme.headline6),
@@ -225,6 +255,7 @@ class __IntegerExampleState extends State<_IntegerExample> {
             children: [
             InkWell(
             onTap: (){
+              storeToSharedPref();
                 gotoRegisterDetailsWeightScreen();
             },
               child:Text('Next',style: TextStyle(fontSize: 24,color: Color(0xff313586),fontWeight: FontWeight.w700),),
@@ -323,7 +354,19 @@ class __IntegerExampleState extends State<_IntegerExample> {
             transitionDuration: Duration(seconds: 1),
             pageBuilder: (_, __, ___) => registerDetailsAge()));
   }
+
+  Future<void> storeToSharedPref() async {
+
+    Map<String,dynamic>register_model_map=register_model.toMap();
+    String register_model_json=jsonEncode(register_model_map);
+    //print("register_model_json");
+    print(register_model_json);
+    SharedPreferences sharedPreferences=await SharedPreferences.getInstance();
+    sharedPreferences.setString("register_model_shared_pref", register_model_json);
+
   }
+
+}
 
 
 

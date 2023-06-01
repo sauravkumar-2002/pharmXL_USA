@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:csc_picker/csc_picker.dart';
 import 'package:flutter/cupertino.dart';
@@ -10,8 +11,12 @@ import 'package:gender_picker/source/enums.dart';
 
 import 'package:intl_phone_field/countries.dart';
 import 'package:intl_phone_field/country_picker_dialog.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../models/register_Model.dart';
 
 var dob_string="DD/MM/YYYY";
+register_Model register_model=register_Model();
 class registerDetailsCountryDob extends StatefulWidget{
 
 
@@ -24,11 +29,12 @@ class registerDetailsCountryDob extends StatefulWidget{
 
 class _registerDetailsCountryDobState extends State<registerDetailsCountryDob> {
   var myopacity=0.0;
+
   var  dob_ed_text=TextEditingController();
 
   Future<void> _selectDate(BuildContext context) async {
     DateTime? datepicked=await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(1910), lastDate: DateTime.now());
-    print("check the flite");
+    print("check the fliter");
     if(datepicked!=null) {
       print("date-- "+datepicked.toString());
       setState(() {
@@ -50,7 +56,7 @@ class _registerDetailsCountryDobState extends State<registerDetailsCountryDob> {
       });
     });
     super.initState();
-
+    getUserInfo();
 
   }
 
@@ -106,6 +112,8 @@ class _registerDetailsCountryDobState extends State<registerDetailsCountryDob> {
 
         print(value);
 
+        register_model.gender=value.toString().substring(7);
+
          },
          verticalAlignedText: false,
          showOtherGender: true,
@@ -129,6 +137,7 @@ class _registerDetailsCountryDobState extends State<registerDetailsCountryDob> {
         children: [
           InkWell(
             onTap: (){
+              storeToSharedPref();
               gotoRegisterDetailsAgeScreen();
             },
             child:Text('Next',style: TextStyle(fontSize: 24,color: Color(0xff313586),fontWeight: FontWeight.w700),),
@@ -143,6 +152,7 @@ class _registerDetailsCountryDobState extends State<registerDetailsCountryDob> {
 
       InkWell(
           onTap: (){
+
             gotoRegisterDetailsAgeScreen();
           },
           child: Text('Skip For Now',style: TextStyle(fontSize: 20,color: Colors.grey,),)
@@ -158,9 +168,6 @@ class _registerDetailsCountryDobState extends State<registerDetailsCountryDob> {
     );
   }
 
-
-
-
   void gotoRegisterDetailsAgeScreen() {
 
     Navigator.push(
@@ -169,15 +176,55 @@ class _registerDetailsCountryDobState extends State<registerDetailsCountryDob> {
             transitionDuration: Duration(seconds: 1),
             pageBuilder: (_, __, ___) => registerDetailsAge()));
   }
+
+  Future<void> getUserInfo() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    Map<String, dynamic> register_model_map = {};
+    final String? register_model_json = prefs.getString('register_model_shared_pref');
+    print(register_model_json);
+    if (register_model_json != null) {
+      register_model_map = jsonDecode(register_model_json) as Map<String, dynamic>;
+    }
+
+    register_model = register_Model.fromMap(register_model_map);
+    print(register_model);
+
+  }
+
+  Future<void> storeToSharedPref() async {
+
+    Map<String,dynamic>register_model_map=register_model.toMap();
+    String register_model_json=jsonEncode(register_model_map);
+    //print("register_model_json");
+    print(register_model_json);
+    SharedPreferences sharedPreferences=await SharedPreferences.getInstance();
+    sharedPreferences.setString("register_model_shared_pref", register_model_json);
+
+  }
+
+
 }
 
 CSCPicker cscPicker(){
   return CSCPicker(
 
     layout: Layout.vertical,
-    onCountryChanged: (Country){},
-    onStateChanged: (State){},
-    onCityChanged: (City){},
+    onCountryChanged: (Country){
+      if(Country!=null) {
+        register_model.country=Country;
+      }
+    },
+    onStateChanged: (State){
+      if(State!=null) {
+        register_model.state=State;
+      }
+    },
+    onCityChanged: (City){
+      if(City!=null) {
+        register_model.city=City;
+      }
+    },
 
     countryDropdownLabel: "Select Your Country",
     stateDropdownLabel: "Select Your State",

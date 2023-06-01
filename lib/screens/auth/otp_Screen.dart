@@ -1,16 +1,24 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
+import 'package:amplify_core/amplify_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pharm_xl/models/register_Model.dart';
 import 'package:pharm_xl/screens/auth/otp_Screen.dart';
 import 'package:pharm_xl/screens/auth/register_Details_Height_Screen.dart';
 import 'package:pharm_xl/screens/auth/register_Details_Country_Dob.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../progress_bar.dart';
+import '../toast.dart';
 
 
 
 
-
+String otp = '';
 class OtpScreen extends StatefulWidget {
   @override
   _OtpScreenState createState() => _OtpScreenState();
@@ -19,6 +27,8 @@ class OtpScreen extends StatefulWidget {
 class _OtpScreenState extends State<OtpScreen> {
   String _pin="";
   var myopacity=0.0;
+
+  register_Model register_model=register_Model();
 
 
 
@@ -33,7 +43,7 @@ class _OtpScreenState extends State<OtpScreen> {
       });
     });
     super.initState();
-
+    getUserInfo();
 
   }
 
@@ -58,7 +68,7 @@ class _OtpScreenState extends State<OtpScreen> {
                       child: Image.asset('assets/images/logo.png',width: 150,height: 150,)),
                 ),
                 Text(
-                  '   Enter the 6-digit Pin\nSent to your Phone No.',
+                  '   Enter the 6-digit Pin\nSent to your Email Id.',
                   style: TextStyle(fontSize: 18),
                 ),
                 SizedBox(height: 20),
@@ -66,11 +76,14 @@ class _OtpScreenState extends State<OtpScreen> {
                   pinLength: 6,
                   onChanged: (value) {
 
-
+                    print(value);
                     setState(() {
+                      print(value);
+                      print(_pin);
                       _pin = value;
                     });
                   },
+
                 ),
 
                 SizedBox(height: 20),
@@ -101,7 +114,8 @@ class _OtpScreenState extends State<OtpScreen> {
                   padding: const EdgeInsets.only(top: 26.0),
                   child: OutlinedButton(
                     onPressed: () {
-                    sendtoRegisterDetailsScreen();
+                      showLoaderDialog(context);
+                    verification_Otp();
 
                     },
                     style: OutlinedButton.styleFrom( //<-- SEE HERE
@@ -119,15 +133,7 @@ class _OtpScreenState extends State<OtpScreen> {
 
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 52.0),
-                  child: CircularProgressIndicator(
-                    backgroundColor: Color(0Xff313586),
-                    color: Color(0xffDE6739),
 
-                    strokeWidth: 6,
-                  ),
-                ),
               ],
             ),
           ),
@@ -142,6 +148,45 @@ class _OtpScreenState extends State<OtpScreen> {
         PageRouteBuilder(
             transitionDuration: Duration(seconds: 2),
             pageBuilder: (_, __, ___) => registerDetailsCountryDob()));
+  }
+
+  void verification_Otp() async{
+    print("otp");
+    print(otp);
+    try {
+      SignUpResult res = await Amplify.Auth.confirmSignUp(
+          username: register_model.email,
+          confirmationCode: otp);
+      if (res.isSignUpComplete) {
+        showToast("You are Succesfully Registered");
+        Navigator.pop(context);
+        sendtoRegisterDetailsScreen();
+      }
+      else {
+        showToast("Some Internal Error Ocurred");
+        Navigator.pop(context);
+      }
+    }
+    on CodeMismatchException catch(e){
+      showToast(e.message.toString());
+      Navigator.pop(context);
+    }
+  }
+
+
+  Future<void> getUserInfo() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    Map<String, dynamic> register_model_map = {};
+    final String? register_model_json = prefs.getString('register_model_shared_pref');
+    print(register_model_json);
+    if (register_model_json != null) {
+      register_model_map = jsonDecode(register_model_json) as Map<String, dynamic>;
+    }
+
+     register_model = register_Model.fromMap(register_model_map);
+    print(register_model);
+
   }
 }
 
@@ -217,7 +262,7 @@ class _PinInputFieldState extends State<PinInputField> {
         _focusNodes[index + 1].requestFocus();
       } else {
         // all boxes filled
-        String otp = '';
+        otp='';
         for (int i = 0; i < widget.pinLength; i++) {
           otp += _controllers[i].text;
         }
@@ -245,3 +290,6 @@ InputDecoration inputDecoration_otp(){
     contentPadding: EdgeInsets.all(1),
   );
 }
+
+
+
