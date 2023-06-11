@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
+import 'package:pharm_xl/back-dataStore/update_To_Dynamo.dart';
 import 'package:units_converter/units_converter.dart';
 import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
@@ -15,6 +16,8 @@ import 'package:numberpicker/numberpicker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
+import '../../SharedPref/get_User_From_SharedPref.dart';
+import '../../SharedPref/store_To_SharedPref.dart';
 import '../../models/register_Model.dart';
 
 
@@ -33,6 +36,7 @@ bool show_feet_container=true;
 bool show_height_container=true;
 bool show_weight_container=false;
 bool show_cm_container=false;
+var x=2;
 register_Model register_model=register_Model();
 class registerDetails extends StatefulWidget{
 
@@ -71,9 +75,12 @@ class _registerDetailsState extends State<registerDetails> {
       });
     });
     super.initState();
-    getUserInfo();
+    getinfo();
 
 
+  }
+  void getinfo() async{
+    register_model= await getUserInfo();
   }
 
   @override
@@ -116,20 +123,6 @@ class _registerDetailsState extends State<registerDetails> {
     );
   }
 
-  Future<void> getUserInfo() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    Map<String, dynamic> register_model_map = {};
-    final String? register_model_json = prefs.getString('register_model_shared_pref');
-    print(register_model_json);
-    if (register_model_json != null) {
-      register_model_map = jsonDecode(register_model_json) as Map<String, dynamic>;
-    }
-
-    register_model = register_Model.fromMap(register_model_map);
-    print(register_model);
-
-  }
 
 
 
@@ -182,7 +175,12 @@ class __IntegerExampleState extends State<_IntegerExample> {
                           maxValue: 8,
                           step: 1,
                           haptics: true,
-                          onChanged: (value) => setState(() => currentFeetValue = value),
+                          onChanged: (value) => setState((){
+                            currentFeetValue = value;
+                            x=currentFeetValue*12;
+                            x+=2;
+
+                          }),
                         ),
                         Text("'", style: Theme.of(context).textTheme.headline6),
                         SizedBox(width: 6),
@@ -199,8 +197,7 @@ class __IntegerExampleState extends State<_IntegerExample> {
                           onChanged: (value) => setState(()
                           {
                             currentInchValue = value;
-                            register_model.height=value.convertFromTo(LENGTH.inches, LENGTH.centimeters) as int;
-                            currentCMValue=register_model.height;
+
                           }),
                         ),
                         Text('"', style: Theme.of(context).textTheme.headline6),
@@ -226,7 +223,8 @@ class __IntegerExampleState extends State<_IntegerExample> {
                           onChanged: (value) => setState(()
                           {
                             currentCMValue = value;
-                            register_model.height=value;
+                           // register_model.height=value as double;
+
                           }),
                         ),
                         SizedBox(width: 3),
@@ -255,7 +253,32 @@ class __IntegerExampleState extends State<_IntegerExample> {
             children: [
             InkWell(
             onTap: (){
-              storeToSharedPref();
+              if(show_cm_container)x=currentCMValue;
+              else {
+                x = currentFeetValue * 12;
+                x += currentInchValue;
+
+                x = x.convertFromTo(LENGTH.inches, LENGTH.centimeters)!.toInt();
+              }
+
+              //register_model.height=y!; //currentCMValue=register_model.height;
+              register_model=register_Model(
+                  email: register_model.email,
+                  phone: register_model.phone,
+                  password: register_model.password,
+                  name: register_model.name,
+                  country: register_model.country,
+                  state: register_model.state,
+                  city: register_model.city,
+                  gender: register_model.gender,
+                  age: register_model.age,
+                  weight:register_model.weight,
+                  height: x.toDouble()
+
+
+              );
+              storeToSharedPref(register_model);
+              updatetoDynamodb(register_model);
                 gotoRegisterDetailsWeightScreen();
             },
               child:Text('Next',style: TextStyle(fontSize: 24,color: Color(0xff313586),fontWeight: FontWeight.w700),),
@@ -355,16 +378,7 @@ class __IntegerExampleState extends State<_IntegerExample> {
             pageBuilder: (_, __, ___) => registerDetailsAge()));
   }
 
-  Future<void> storeToSharedPref() async {
 
-    Map<String,dynamic>register_model_map=register_model.toMap();
-    String register_model_json=jsonEncode(register_model_map);
-    //print("register_model_json");
-    print(register_model_json);
-    SharedPreferences sharedPreferences=await SharedPreferences.getInstance();
-    sharedPreferences.setString("register_model_shared_pref", register_model_json);
-
-  }
 
 }
 

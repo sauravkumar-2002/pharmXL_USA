@@ -3,24 +3,26 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:numberpicker/numberpicker.dart';
-import 'package:pharm_xl/SharedPref/login_bool.dart';
 import 'package:pharm_xl/screens/auth/register_Details_Height_Screen.dart';
 import 'package:pharm_xl/screens/auth/register_Details_Country_Dob.dart';
+import 'package:pharm_xl/screens/bmi_screens/input_page.dart';
 
-import '../auth/login_Screen.dart';
+import '../../SharedPref/get_User_From_SharedPref.dart';
+import '../../models/register_Model.dart';
 
 
 
 var currentAgeValue = 3;
+register_Model register_model=register_Model();
 
-class profileScreen extends StatefulWidget {
+class bmiScreen extends StatefulWidget {
 
 
   @override
-  State<profileScreen> createState() => _profileScreenState();
+  State<bmiScreen> createState() => _bmiScreenState();
 }
 
-class _profileScreenState extends State<profileScreen> {
+class _bmiScreenState extends State<bmiScreen> {
 //blue --313586
 //orange-- DE6739
 
@@ -36,6 +38,10 @@ class _profileScreenState extends State<profileScreen> {
       });
     });
     super.initState();
+    getinfo();
+  }
+  void getinfo() async{
+    register_model= await getUserInfo();
   }
 
   @override
@@ -59,9 +65,10 @@ class _profileScreenState extends State<profileScreen> {
                         child: Image.asset(
                           'assets/images/logo.png', width: 150, height: 150,)),
                   ),
-                  InkWell(
-                    onTap:()=> logout(),
-                      child: Text("Log Out"))
+                  InkWell(onTap:(){
+                    sendToBMI_Input_page();
+                  },
+                  child: Text("BMI"))
 
 
 
@@ -74,19 +81,12 @@ class _profileScreenState extends State<profileScreen> {
     );
   }
 
-  logout() async{
-    bool_login_sharedPref(false);
-    sendToLoginScreen();
-  }
-
-  void sendToLoginScreen() {
+  void sendToBMI_Input_page() {
     Navigator.push(
         context,
         PageRouteBuilder(
             transitionDuration: Duration(seconds: 2),
-            pageBuilder: (_, __, ___) => loginScreen()));
-
-
+            pageBuilder: (_, __, ___) => InputPage()));
   }
 
 

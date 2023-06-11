@@ -10,14 +10,14 @@ import 'package:pharm_xl/screens/auth/register_Details_Country_Dob.dart';
 
 var currentAgeValue = 3;
 
-class settingsScreen extends StatefulWidget {
+class plansScreen extends StatefulWidget {
 
 
   @override
-  State<settingsScreen> createState() => _settingsScreenState();
+  State<plansScreen> createState() => _plansScreenState();
 }
 
-class _settingsScreenState extends State<settingsScreen> {
+class _plansScreenState extends State<plansScreen> {
 //blue --313586
 //orange-- DE6739
 
@@ -56,7 +56,7 @@ class _settingsScreenState extends State<settingsScreen> {
                         child: Image.asset(
                           'assets/images/logo.png', width: 150, height: 150,)),
                   ),
-                  Text("settings")
+                  Text("Plans")
 
 
 

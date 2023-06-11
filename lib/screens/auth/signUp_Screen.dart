@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
@@ -9,7 +10,8 @@ import 'package:pharm_xl/screens/auth/otp_Screen.dart';
 import 'package:pharm_xl/screens/progress_bar.dart';
 import 'package:pharm_xl/models/register_Model.dart';
 import 'package:pharm_xl/screens/toast.dart';
-import 'package:pharm_xl/amplifyconfiguration.dart';
+import 'package:pharm_xl/error_text/error_text_field.dart';
+
 import 'package:pharm_xl/screens/auth/aws_auth/awsAuthRepo.dart';
 //import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:amplify_core/amplify_core.dart';
@@ -18,6 +20,8 @@ import 'package:email_validator/email_validator.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../models/ModelProvider.dart';
 
 bool _registerFlag_for_error=false;
 var  confirmpasswordText=TextEditingController();
@@ -57,18 +61,7 @@ class _signUpScreenState extends State<signUpScreen>{
 
 
 
-  void _configureAmplify() async {
-    try {
-      await Amplify.addPlugin(AmplifyAuthCognito());
-      await Amplify.configure(amplifyconfig);
-      setState(() =>
-      _isAmplifyConfigured = true
-      );
-      print('Successfully configured');
-    } on Exception catch (e) {
-      print('Error configuring Amplify: $e');
-    }
-  }
+
 
 
   @override
@@ -79,7 +72,7 @@ class _signUpScreenState extends State<signUpScreen>{
       });
     });
     super.initState();
-    _configureAmplify();
+
 
 
   }
@@ -133,7 +126,7 @@ class _signUpScreenState extends State<signUpScreen>{
                       obscureText: false,
                       decoration: inputDecoration_Email(emailText),
                       keyboardType: TextInputType.emailAddress,
-                      onChanged: (text) => setState(() =>_email_textfield_error_text=_errorText(emailText, "email")
+                      onChanged: (text) => setState(() =>_email_textfield_error_text=errorText(emailText, "email")
                       ),
 
 
@@ -185,7 +178,7 @@ class _signUpScreenState extends State<signUpScreen>{
                         labelText: "Password",
                         labelStyle: TextStyle(color: Color(0Xff313586)),
 
-                        errorText: _registerFlag_for_error ? _errorText(passwordText,"password") : null,
+                        errorText: _registerFlag_for_error ? errorText(passwordText,"password") : null,
 
                         prefixIcon: Icon(Icons.lock,color: Color(0Xff313586),),
                         suffixIcon: IconButton(
@@ -228,7 +221,7 @@ class _signUpScreenState extends State<signUpScreen>{
                         labelText: "Confirm Password",
                         labelStyle: TextStyle(color: Color(0Xff313586)),
 
-                        errorText: _registerFlag_for_error ? _errorText(passwordText,"conf_password") : null,
+                        errorText: _registerFlag_for_error ? errorText(passwordText,"conf_password") : null,
 
                         prefixIcon: Icon(Icons.lock,color: Color(0Xff313586),),
                         suffixIcon: IconButton(
@@ -397,7 +390,7 @@ void _registerAccount() async {
       on UsernameExistsException catch (e) {
         showToast(e.message);
         setState(() {
-          _email_textfield_error_text=_errorText(emailText,"email_exist");
+          _email_textfield_error_text=errorText(emailText,"email_exist");
         });
 
       }
@@ -437,12 +430,22 @@ void _registerAccount() async {
   }
 
   Future<void> storeToSharedPref() async {
-    register_Model register_model=register_Model();
-    register_model.email=emailText.text.toString();
+    register_Model register_model=register_Model(
+      email: emailText.text.toString(),
+        password:passwordText.text.toString(),
+        phone:phoneText.text.toString(),
+        name: nameText.text.toString(),
+    );
+
+
+
+    /*register_model.email=emailText.text.toString();
     register_model.password=passwordText.text.toString();
     register_model.phone=phoneText.text.toString();
     register_model.name=nameText.text.toString();
 
+
+     */
 
 
     //print("register_model.toString()");
@@ -530,7 +533,7 @@ InputDecoration inputDecoration_name(TextEditingController nameText){
     ),
     labelText: "Your Name.",
     labelStyle: TextStyle(color: Color(0Xff313586),),
-      errorText: _registerFlag_for_error ? _errorText(nameText,"name") : null,
+      errorText: _registerFlag_for_error ? errorText(nameText,"name") : null,
 
     prefixIcon: Icon(Icons.person,color: Color(0Xff313586),),
 
@@ -557,7 +560,7 @@ InputDecoration inputDecoration_Password(String hint,String label,TextEditingCon
     labelText: label,
     labelStyle: TextStyle(color: Color(0Xff313586)),
 
-    errorText: _registerFlag_for_error ? _errorText(passwordText,"password") : null,
+    errorText: _registerFlag_for_error ? errorText(passwordText,"password") : null,
 
     prefixIcon: Icon(Icons.lock,color: Color(0Xff313586),),
     suffixIcon: IconButton(
@@ -590,7 +593,7 @@ InputDecoration inputDecoration_confirmPassword(String hint,String label,TextEdi
     labelText: label,
     labelStyle: TextStyle(color: Color(0Xff313586)),
 
-    errorText: _registerFlag_for_error ? _errorText(passwordText,"conf_password") : null,
+    errorText: _registerFlag_for_error ? errorText(passwordText,"conf_password") : null,
 
     prefixIcon: Icon(Icons.lock,color: Color(0Xff313586),),
     suffixIcon: IconButton(
@@ -615,50 +618,4 @@ BoxDecoration boxDecoration(){
   );
 }
 
-String?  _errorText(TextEditingController _controller,String type ) {
-  // at any time, we can get the text from _controller.value.text
-  final text = _controller.value.text;
-  if(type=="email"){
-    if (text.isEmpty) {
-      return 'Can\'t be empty';
-    }
-    else if(!EmailValidator.validate(text)){
-      return "Not a Valid Email";
-    }
-    return null;
-  }
-  if(type=="name"){
-    if (text.isEmpty) {
-      return 'Can\'t be empty';
-    }
-    else if(text.length<2){
-      return "Minimum of 2 Characters";
-    }
-    return null;
-  }
-  if(type=="password"){
-    if (text.isEmpty) {
-      return 'Can\'t be empty';
-    }
-    else if(text.length<10){
-      return "Minimum of 10 Characters";
-    }
-    return null;
-  }
-  if(type=="conf_password"){
-    if (text.isEmpty) {
-      return 'Can\'t be empty';
-    }
-    else if(text!=confirmpasswordText.text){
-      return "Does\'t matches with Password";
-    }
-    return null;
-  }
-  if(type=="email_exist"){
-   return "Email Already Exists";
-  }
-
-  // return null if the text is valid
-  return null;
-}
 

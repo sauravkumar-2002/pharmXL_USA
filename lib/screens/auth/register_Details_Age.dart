@@ -8,6 +8,9 @@ import 'package:pharm_xl/screens/auth/register_Details_Height_Screen.dart';
 import 'package:pharm_xl/screens/auth/register_Details_Country_Dob.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../SharedPref/get_User_From_SharedPref.dart';
+import '../../SharedPref/store_To_SharedPref.dart';
+import '../../back-dataStore/update_To_Dynamo.dart';
 import '../../models/register_Model.dart';
 
 
@@ -37,7 +40,10 @@ class _registerDetailsAgeState extends State<registerDetailsAge> {
       });
     });
     super.initState();
-    getUserInfo();
+    getinfo();
+  }
+  void getinfo() async{
+    register_model= await getUserInfo();
   }
 
   @override
@@ -85,20 +91,7 @@ class _registerDetailsAgeState extends State<registerDetailsAge> {
 
 
 
-  Future<void> getUserInfo() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    Map<String, dynamic> register_model_map = {};
-    final String? register_model_json = prefs.getString('register_model_shared_pref');
-    print(register_model_json);
-    if (register_model_json != null) {
-      register_model_map = jsonDecode(register_model_json) as Map<String, dynamic>;
-    }
-
-    register_model = register_Model.fromMap(register_model_map);
-    print(register_model);
-
-  }
 
 
 
@@ -133,7 +126,19 @@ class __IntegerExampleState extends State<_IntegerExample> {
               haptics: true,
               onChanged: (value) => setState(() {
                 currentAgeValue=value;
-                register_model.age=value;
+                //register_model.age=value;
+                register_model=register_Model(
+                    email: register_model.email,
+                    phone: register_model.phone,
+                    password: register_model.password,
+                    name: register_model.name,
+                    country: register_model.country,
+                    state: register_model.state,
+                    city: register_model.city,
+                    gender: register_model.gender,
+                    age: value
+                );
+
               }),
             ),
             SizedBox(width: 3,),
@@ -151,7 +156,8 @@ class __IntegerExampleState extends State<_IntegerExample> {
           children: [
             InkWell(
               onTap: (){
-                storeToSharedPref();
+                storeToSharedPref(register_model);
+                updatetoDynamodb(register_model);
                 gotoRegisterDetailsHieghtScreen();
               },
               child:Text('Next',style: TextStyle(fontSize: 24,color: Color(0xff313586),fontWeight: FontWeight.w700),),
@@ -205,16 +211,7 @@ class __IntegerExampleState extends State<_IntegerExample> {
             pageBuilder: (_, __, ___) => registerDetails()));
   }
 
-  Future<void> storeToSharedPref() async {
 
-    Map<String,dynamic>register_model_map=register_model.toMap();
-    String register_model_json=jsonEncode(register_model_map);
-    //print("register_model_json");
-    print(register_model_json);
-    SharedPreferences sharedPreferences=await SharedPreferences.getInstance();
-    sharedPreferences.setString("register_model_shared_pref", register_model_json);
-
-  }
 }
 
 

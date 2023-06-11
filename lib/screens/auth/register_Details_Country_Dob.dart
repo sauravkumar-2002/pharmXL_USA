@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:amplify_core/amplify_core.dart';
 import 'package:csc_picker/csc_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:pharm_xl/screens/auth/register_Details_Age.dart';
@@ -13,6 +14,9 @@ import 'package:intl_phone_field/countries.dart';
 import 'package:intl_phone_field/country_picker_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../SharedPref/get_User_From_SharedPref.dart';
+import '../../SharedPref/store_To_SharedPref.dart';
+import '../../back-dataStore/update_To_Dynamo.dart';
 import '../../models/register_Model.dart';
 
 var dob_string="DD/MM/YYYY";
@@ -49,14 +53,14 @@ class _registerDetailsCountryDobState extends State<registerDetailsCountryDob> {
 
 
   @override
-  void initState() {
+  void initState(){
     Timer(Duration(milliseconds: 550),(){
       setState(() {
         myopacity=1.0;
       });
     });
     super.initState();
-    getUserInfo();
+   getinfo();
 
   }
 
@@ -112,7 +116,17 @@ class _registerDetailsCountryDobState extends State<registerDetailsCountryDob> {
 
         print(value);
 
-        register_model.gender=value.toString().substring(7);
+        //register_model.gender=value.toString().substring(7);
+        register_model=register_Model(
+            email: register_model.email,
+            phone: register_model.phone,
+            password: register_model.password,
+            name: register_model.name,
+            country: register_model.country,
+            state: register_model.state,
+            city: register_model.city,
+            gender: value.toString().substring(7)
+        );
 
          },
          verticalAlignedText: false,
@@ -137,7 +151,8 @@ class _registerDetailsCountryDobState extends State<registerDetailsCountryDob> {
         children: [
           InkWell(
             onTap: (){
-              storeToSharedPref();
+              storeToSharedPref(register_model);
+              updatetoDynamodb(register_model);
               gotoRegisterDetailsAgeScreen();
             },
             child:Text('Next',style: TextStyle(fontSize: 24,color: Color(0xff313586),fontWeight: FontWeight.w700),),
@@ -177,31 +192,14 @@ class _registerDetailsCountryDobState extends State<registerDetailsCountryDob> {
             pageBuilder: (_, __, ___) => registerDetailsAge()));
   }
 
-  Future<void> getUserInfo() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-
-    Map<String, dynamic> register_model_map = {};
-    final String? register_model_json = prefs.getString('register_model_shared_pref');
-    print(register_model_json);
-    if (register_model_json != null) {
-      register_model_map = jsonDecode(register_model_json) as Map<String, dynamic>;
-    }
-
-    register_model = register_Model.fromMap(register_model_map);
-    print(register_model);
-
+  void getinfo() async{
+    register_model= await getUserInfo();
   }
 
-  Future<void> storeToSharedPref() async {
 
-    Map<String,dynamic>register_model_map=register_model.toMap();
-    String register_model_json=jsonEncode(register_model_map);
-    //print("register_model_json");
-    print(register_model_json);
-    SharedPreferences sharedPreferences=await SharedPreferences.getInstance();
-    sharedPreferences.setString("register_model_shared_pref", register_model_json);
 
-  }
+
+
 
 
 }
@@ -212,17 +210,44 @@ CSCPicker cscPicker(){
     layout: Layout.vertical,
     onCountryChanged: (Country){
       if(Country!=null) {
-        register_model.country=Country;
+        //register_model.country=Country;
+        register_model=register_Model(
+            email: register_model.email,
+            phone: register_model.phone,
+            password: register_model.password,
+            name: register_model.name,
+            country: Country,
+            gender: register_model.gender
+        );
       }
     },
     onStateChanged: (State){
       if(State!=null) {
-        register_model.state=State;
+        //register_model.state=State;
+        register_model=register_Model(
+          email: register_model.email,
+          phone: register_model.phone,
+          password: register_model.password,
+          name: register_model.name,
+          country: register_model.country,
+          state: State,
+          gender: register_model.gender
+        );
       }
     },
     onCityChanged: (City){
       if(City!=null) {
-        register_model.city=City;
+        //register_model.city=City;
+        register_model=register_Model(
+          email: register_model.email,
+          phone: register_model.phone,
+          password: register_model.password,
+          name: register_model.name,
+          country: register_model.country,
+          state: register_model.state,
+          city: City,
+            gender: register_model.gender
+        );
       }
     },
 

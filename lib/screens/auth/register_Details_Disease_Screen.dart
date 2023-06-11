@@ -10,7 +10,8 @@ import 'package:pharm_xl/screens/auth/register_Details_Weight_Screen.dart';
 
 List<String> selected_disease = [];
 List<String> total_disease = ['a','b','c','d'];
-bool toggleValue_tratment=false;
+List<int>toggleValue_tratment=[];
+//bool toggleValue_tratment=false;
 
 
 
@@ -139,6 +140,7 @@ class _registerDetailsDiseaseState extends State<registerDetailsDisease> {
                                  _data=generateItems(selected_disease.length, selected_disease);
                                  print(_data);
                                  print(selected_disease);
+                                 for(int i=0;i<selected_disease.length;i++)toggleValue_tratment.insert(i, 0);
                                });
                              },
                                   );
@@ -282,10 +284,11 @@ class _registerDetailsDiseaseState extends State<registerDetailsDisease> {
                        Text('On Going Treatment : '),
 
                      Switch(
-                      value: toggleValue_tratment,
+                      value: toggleValue_tratment[item.index]==0?false:true,
                       onChanged: (value) {
                         setState(() {
-                          toggleValue_tratment = value;
+
+                          toggleValue_tratment[item.index]=value?1:0;
                         });
                       },
 

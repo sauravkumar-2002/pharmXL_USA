@@ -54,6 +54,7 @@ dependencies:
   amplify_core: ^1.1.0
   amplify_auth_cognito: ^1.1.0
   amplify_flutter: ^1.1.0
+  amplify_datastore: ^1.0.0
 
 
 

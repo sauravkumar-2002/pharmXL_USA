@@ -1,34 +1,32 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:pharm_xl/back-dataStore/update_To_Dynamo.dart';
 import 'package:pharm_xl/screens/auth/login_Screen.dart';
 import 'package:pharm_xl/screens/auth/register_Details_Height_Screen.dart';
 import 'package:pharm_xl/screens/auth/register_Details_Weight_Screen.dart';
 import 'package:pharm_xl/screens/auth/register_Details_Disease_Screen.dart';
 import 'package:pharm_xl/screens/auth/signUp_Screen.dart';
 import 'package:numberpicker/numberpicker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 
+import '../../SharedPref/get_User_From_SharedPref.dart';
+import '../../SharedPref/store_To_SharedPref.dart';
+import '../../models/register_Model.dart';
 
 
 
-int currentFeetValue = 3;
-int currentInchValue = 2;
+
 int currentweightValue=10;
-int initial_label_index=0;
-var height_feet_opacity=1.0;
+
 var weight_Container_Opacity=0.0;
-var height_Container_Opacity=1.0;
-var height_cm_opacity=1.0;
-int currentCMValue=100;
-bool show_feet_container=true;
-bool show_height_container=true;
+
 bool show_weight_container=false;
-bool show_cm_container=false;
-
-
+register_Model register_model=register_Model();
 
 
 
@@ -71,8 +69,13 @@ class _registerDetailsWeightState extends State<registerDetailsWeight> {
       });
     });
     super.initState();
+    getinfo();
 
 
+  }
+
+  void getinfo() async{
+    register_model= await getUserInfo();
   }
 
   @override
@@ -126,6 +129,9 @@ class _registerDetailsWeightState extends State<registerDetailsWeight> {
 
 
 
+
+
+
 }
 
 
@@ -162,7 +168,24 @@ class __IntegerExampleState extends State<_IntegerExample> {
                   itemHeight: 100,
                   axis: Axis.horizontal,
                   onChanged: (value) =>
-                      setState(() => currentweightValue = value),
+                      setState((){
+                        currentweightValue = value;
+                        //register_model.weight=currentweightValue;
+                        register_model=register_Model(
+                            email: register_model.email,
+                            phone: register_model.phone,
+                            password: register_model.password,
+                            name: register_model.name,
+                            country: register_model.country,
+                            state: register_model.state,
+                            city: register_model.city,
+                            gender: register_model.gender,
+                            age: register_model.age,
+                            weight: value*(1.00),
+
+
+                        );
+                      }),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(0),
                     border: Border.all(color: Color(0xFF313586),width: 2),
@@ -175,7 +198,7 @@ class __IntegerExampleState extends State<_IntegerExample> {
                       icon: Icon(Icons.remove),
                       onPressed: () => setState(() {
                         final newValue = currentweightValue - 5;
-                        currentweightValue = newValue.clamp(0, 100);
+                        currentweightValue = newValue.clamp(0, 120);
                       }),
                     ),
                     Text('Current Weight in Kg: $currentweightValue'),
@@ -201,6 +224,8 @@ class __IntegerExampleState extends State<_IntegerExample> {
           children: [
             InkWell(
               onTap: (){
+                storeToSharedPref(register_model);
+                updatetoDynamodb(register_model);
                 gotoRegisterDetailsDiseaseScreen();
               },
               child:Text('Next',style: TextStyle(fontSize: 24,color: Color(0xff313586),fontWeight: FontWeight.w700),),
@@ -258,7 +283,6 @@ class __IntegerExampleState extends State<_IntegerExample> {
             transitionDuration: Duration(seconds: 1),
             pageBuilder: (_, __, ___) => registerDetails()));
   }
-
 
 
 

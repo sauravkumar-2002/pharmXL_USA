@@ -3,15 +3,21 @@ import 'dart:convert';
 
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_core/amplify_core.dart';
+import 'package:amplify_datastore/amplify_datastore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pharm_xl/models/ModelProvider.dart';
 import 'package:pharm_xl/models/register_Model.dart';
+import 'package:pharm_xl/screens/auth/login_Screen.dart';
 import 'package:pharm_xl/screens/auth/otp_Screen.dart';
 import 'package:pharm_xl/screens/auth/register_Details_Height_Screen.dart';
 import 'package:pharm_xl/screens/auth/register_Details_Country_Dob.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pharm_xl/amplifyconfiguration.dart';
 
+import '../../SharedPref/login_bool.dart';
+import '../../back-dataStore/readFromDynamodb.dart';
 import '../progress_bar.dart';
 import '../toast.dart';
 
@@ -32,7 +38,20 @@ class _OtpScreenState extends State<OtpScreen> {
 
 
 
+  void _configureAmplify() async {
+    print("_config_started");
+    try {
+      print("_config_started_try");
+      final provider=ModelProvider();
+      final datastoreplugin=AmplifyDataStore(modelProvider: provider);
 
+      await Amplify.addPlugin(datastoreplugin);
+      await Amplify.configure(amplifyconfig);
+      print('Successfully configured');
+    } on Exception catch (e) {
+      print('Error configuring Amplify: $e');
+    }
+  }
 
 
   @override
@@ -43,6 +62,7 @@ class _OtpScreenState extends State<OtpScreen> {
       });
     });
     super.initState();
+   // _configureAmplify();
     getUserInfo();
 
   }
@@ -151,19 +171,26 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   void verification_Otp() async{
+
+    update();
+    readall();
+
     print("otp");
     print(otp);
     try {
       SignUpResult res = await Amplify.Auth.confirmSignUp(
-          username: register_model.email,
+          username: register_model.email!,
           confirmationCode: otp);
       if (res.isSignUpComplete) {
         showToast("You are Succesfully Registered");
         Navigator.pop(context);
+        storetoDynamodb(register_model);
+        bool_login_sharedPref(true);
         sendtoRegisterDetailsScreen();
       }
       else {
         showToast("Some Internal Error Ocurred");
+        bool_login_sharedPref(false);
         Navigator.pop(context);
       }
     }
@@ -184,10 +211,57 @@ class _OtpScreenState extends State<OtpScreen> {
       register_model_map = jsonDecode(register_model_json) as Map<String, dynamic>;
     }
 
-     register_model = register_Model.fromMap(register_model_map);
+     register_model = register_Model.fromJson(register_model_map);
     print(register_model);
 
   }
+
+  void storetoDynamodb(register_Model register_model) async{
+    try {
+      await Amplify.DataStore.save(register_model);
+      print('Task created successfully');
+    } catch (e) {
+      print('Error creating task: $e');
+    }
+  }
+
+
+  Future<List<register_Model>?> readby_email(String email) async{
+    try{
+        final obj=await Amplify.DataStore.query(register_Model.classType,where: register_Model.EMAIL.eq(email));
+        print("sexy obj email");
+        print(obj);
+        if(obj.isEmpty){
+          //no obj exists
+          return null;
+
+        }
+        return obj;
+    }
+    catch(e){
+      print(e);
+      throw e;
+    }
+  }
+
+  void update() async{
+    try{
+      final obj=await readby_email("20je0882@ece.iitism.ac.in");
+      print("sexy obj email update");
+      List<graph_value_Model> xx=[];
+      xx.add(graph_value_Model(date: "todayd date",xValue: 21,yValue: 23));
+      xx.add(graph_value_Model(date: "todayd date",xValue: 20,yValue: 2,diettaken: "total diet"));
+      obj?[0]=register_Model(email: obj[0].email,
+                              phone:"000",graph_value: xx);
+      await Amplify.DataStore.save(obj?[0] as register_Model);
+      print(obj?[0]);
+
+    }
+    catch(e){
+      print(e);
+    }
+  }
+
 }
 
 
